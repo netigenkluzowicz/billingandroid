@@ -9,7 +9,7 @@ import java.util.List;
 public interface PurchaseListener {
     void onItemBought(String sku);
 
-    void onPaymentsError(int errorMsg);
+    void onPaymentsError(String errorMsg);
 
     void onItemNotBought(@Nullable String sku);
 
