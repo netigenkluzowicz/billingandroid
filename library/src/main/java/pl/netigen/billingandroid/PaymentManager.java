@@ -38,6 +38,8 @@ public class PaymentManager implements IPaymentManager, PurchasesUpdatedListener
     public static final String TEST_CANCELED = "android.test.canceled";
     public static final String TEST_ITEM_UNAVAILABLE = "android.test.item_unavailable";
 
+    private BillingPreferencesHelper billingPreferencesHelper;
+
     private static String getErrorMessage(int errorCode) {
         switch (errorCode) {
             case BillingClient.BillingResponse.OK:
@@ -76,6 +78,7 @@ public class PaymentManager implements IPaymentManager, PurchasesUpdatedListener
 
     private PaymentManager(Activity activity) {
         this.activity = activity;
+        billingPreferencesHelper = BillingPreferencesHelper.getInstance(activity);
         billingClient = BillingClient.newBuilder(activity).setListener(this).build();
     }
 
@@ -170,6 +173,7 @@ public class PaymentManager implements IPaymentManager, PurchasesUpdatedListener
                 String purchaseSku = purchase.getSku();
                 if (purchaseSku.equals(sku)) {
                     purchaseListener.onItemBought(sku);
+                    billingPreferencesHelper.setSkuBought(sku, true);
                     return;
                 }
             }
@@ -178,6 +182,7 @@ public class PaymentManager implements IPaymentManager, PurchasesUpdatedListener
     }
 
     public void isItemPurchased(String itemSku, PurchaseListener purchaseListener) {
+        if (isItemInSharedPreferences(itemSku, purchaseListener)) return;
         this.sku = itemSku;
         this.purchaseListener = purchaseListener;
         if (billingClient != null) {
@@ -203,6 +208,18 @@ public class PaymentManager implements IPaymentManager, PurchasesUpdatedListener
                 Log.d(TAG, "isItemPurchased: activity null");
             }
         }
+    }
+
+    private boolean isItemInSharedPreferences(String itemSku, PurchaseListener purchaseListener) {
+        if(billingPreferencesHelper.wasSkuChecked(itemSku)){
+            if(billingPreferencesHelper.isSkuBought(itemSku)){
+                purchaseListener.onItemBought(itemSku);
+            }else{
+                purchaseListener.onItemNotBought(itemSku);
+            }
+            return true;
+        }
+        return false;
     }
 
     private static final String TAG = "PaymentManager";
