@@ -21,16 +21,19 @@ public class PaymentManager implements IPaymentManager, PurchasesUpdatedListener
     private String sku;
     private List<String> skuList;
     private static IPaymentManager paymentManager;
+    public Activity activity;
+    public static final int RESPONSE_OK = BillingClient.BillingResponse.OK;
 
-    public static IPaymentManager getInstance(Context context) {
+    public static IPaymentManager getInstance(Activity activity) {
         if (paymentManager == null) {
-            paymentManager = new PaymentManager(context);
+            paymentManager = new PaymentManager(activity);
         }
         return (PaymentManager) paymentManager;
     }
 
-    private PaymentManager(Context context) {
-        billingClient = BillingClient.newBuilder(context).setListener(this).build();
+    private PaymentManager(Activity activity) {
+        this.activity = activity;
+        billingClient = BillingClient.newBuilder(activity).setListener(this).build();
     }
 
     private void queryPurchases() {
@@ -52,7 +55,11 @@ public class PaymentManager implements IPaymentManager, PurchasesUpdatedListener
         if (isServiceConnected) {
             runnable.run();
         } else {
-            startServiceConnectionAndRun(runnable);
+            billingClient = BillingClient.newBuilder(activity).setListener(this).build();
+            if (billingClient.isReady()) {
+            }else{
+                startServiceConnectionAndRun(runnable);
+            }
         }
     }
 
@@ -65,6 +72,9 @@ public class PaymentManager implements IPaymentManager, PurchasesUpdatedListener
                     .setType(BillingClient.SkuType.INAPP)
                     .setOldSkus(null)
                     .build();
+            if (billingClient == null) {
+                return;
+            }
             billingClient.launchBillingFlow(activity, purchaseParams);
         };
         executeServiceRequest(purchaseFlowRequest);
@@ -142,25 +152,38 @@ public class PaymentManager implements IPaymentManager, PurchasesUpdatedListener
                     }
                 });
             }
+        } else {
+            if (activity != null) {
+                billingClient = BillingClient.newBuilder(activity).setListener(this).build();
+            } else {
+                Log.d(TAG, "isItemPurchased: activity null");
+            }
         }
     }
 
+    private static final String TAG = "PaymentManager";
 
-    public void consumeAsync(final String purchaseToken) {
+    public void consumeAsync(final String purchaseToken, ItemConsumedListener itemConsumedListener) {
         final ConsumeResponseListener onConsumeListener = new ConsumeResponseListener() {
             @Override
             public void onConsumeResponse(@BillingClient.BillingResponse int responseCode, String purchaseToken) {
+                itemConsumedListener.onItemConsumed(responseCode, purchaseToken);
             }
         };
 
         Runnable consumeRequest = new Runnable() {
             @Override
             public void run() {
-                billingClient.consumeAsync(purchaseToken, onConsumeListener);
+                if (billingClient != null) {
+                    billingClient.consumeAsync(purchaseToken, onConsumeListener);
+                } else {
+                    if(activity!=null){
+                        billingClient = BillingClient.newBuilder(activity).setListener(PaymentManager.this).build();
+                        startServiceConnectionAndRun(this);
+                    }
+                }
             }
         };
-
         executeServiceRequest(consumeRequest);
     }
-
 }

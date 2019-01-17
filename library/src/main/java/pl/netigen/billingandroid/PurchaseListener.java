@@ -14,5 +14,4 @@ public interface PurchaseListener {
     void onItemNotBought(@Nullable String sku);
 
     void onPurchasedItemsLoaded(List<Purchase> purchases);
-
 }

@@ -9,5 +9,5 @@ public interface IPaymentManager {
 
     void isItemPurchased(String itemSku, PurchaseListener purchaseListener);
 
-    void consumeAsync(final String purchaseToken);
+    void consumeAsync(final String purchaseToken, ItemConsumedListener itemConsumedListener);
 }
