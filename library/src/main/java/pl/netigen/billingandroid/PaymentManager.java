@@ -20,8 +20,9 @@ public class PaymentManager implements IPaymentManager, PurchasesUpdatedListener
     private boolean isServiceConnected;
     private String sku;
     private static IPaymentManager paymentManager;
-    public Activity activity;
+    private static TestPaymentManager testPaymentManager;
 
+    public Activity activity;
     public static final String OK = "OK";
     public static final String BILLING_UNAVAILABLE = "BILLING_UNAVAILABLE";
     public static final String DEVELOPER_ERROR = "DEVELOPER_ERROR";
@@ -69,11 +70,18 @@ public class PaymentManager implements IPaymentManager, PurchasesUpdatedListener
         }
     }
 
+    public static TestPaymentManager getTestInstance(Activity activity) {
+        if (testPaymentManager == null) {
+            testPaymentManager = new PaymentManager(activity);
+        }
+        return testPaymentManager;
+    }
+
     public static IPaymentManager getInstance(Activity activity) {
         if (paymentManager == null) {
             paymentManager = new PaymentManager(activity);
         }
-        return (PaymentManager) paymentManager;
+        return paymentManager;
     }
 
     private PaymentManager(Activity activity) {
@@ -211,10 +219,10 @@ public class PaymentManager implements IPaymentManager, PurchasesUpdatedListener
     }
 
     private boolean isItemInSharedPreferences(String itemSku, PurchaseListener purchaseListener) {
-        if(billingPreferencesHelper.wasSkuChecked(itemSku)){
-            if(billingPreferencesHelper.isSkuBought(itemSku)){
+        if (billingPreferencesHelper.wasSkuChecked(itemSku)) {
+            if (billingPreferencesHelper.isSkuBought(itemSku)) {
                 purchaseListener.onItemBought(itemSku);
-            }else{
+            } else {
                 purchaseListener.onItemNotBought(itemSku);
             }
             return true;
