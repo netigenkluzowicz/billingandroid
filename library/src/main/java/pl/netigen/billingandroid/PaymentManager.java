@@ -19,10 +19,7 @@ public class PaymentManager implements IPaymentManager, PurchasesUpdatedListener
     private PurchaseListener purchaseListener;
     private boolean isServiceConnected;
     private String sku;
-    private static IPaymentManager paymentManager;
-    private static TestPaymentManager testPaymentManager;
 
-    public Activity activity;
     public static final String OK = "OK";
     public static final String BILLING_UNAVAILABLE = "BILLING_UNAVAILABLE";
     public static final String DEVELOPER_ERROR = "DEVELOPER_ERROR";
@@ -40,6 +37,21 @@ public class PaymentManager implements IPaymentManager, PurchasesUpdatedListener
     public static final String TEST_ITEM_UNAVAILABLE = "android.test.item_unavailable";
 
     private BillingPreferencesHelper billingPreferencesHelper;
+    private Activity activity;
+
+    public static IPaymentManager createIPaymentManager(Activity activity) {
+        return (IPaymentManager) new PaymentManager(activity);
+    }
+
+    public static TestPaymentManager createTestPaymentManager(Activity activity) {
+        return (TestPaymentManager) new PaymentManager(activity);
+    }
+
+    private PaymentManager(Activity activity) {
+        this.activity = activity;
+        billingPreferencesHelper = BillingPreferencesHelper.getInstance(activity);
+        billingClient = BillingClient.newBuilder(activity).setListener(this).build();
+    }
 
     private static String getErrorMessage(int errorCode) {
         switch (errorCode) {
@@ -68,26 +80,6 @@ public class PaymentManager implements IPaymentManager, PurchasesUpdatedListener
             default:
                 return ERROR;
         }
-    }
-
-    public static TestPaymentManager getTestInstance(Activity activity) {
-        if (testPaymentManager == null) {
-            testPaymentManager = new PaymentManager(activity);
-        }
-        return testPaymentManager;
-    }
-
-    public static IPaymentManager getInstance(Activity activity) {
-        if (paymentManager == null) {
-            paymentManager = new PaymentManager(activity);
-        }
-        return paymentManager;
-    }
-
-    private PaymentManager(Activity activity) {
-        this.activity = activity;
-        billingPreferencesHelper = BillingPreferencesHelper.getInstance(activity);
-        billingClient = BillingClient.newBuilder(activity).setListener(this).build();
     }
 
     private void queryPurchases() {
@@ -167,8 +159,9 @@ public class PaymentManager implements IPaymentManager, PurchasesUpdatedListener
     public void onDestroy() {
         if (billingClient != null && billingClient.isReady()) {
             billingClient.endConnection();
-            billingClient = null;
         }
+        billingClient = null;
+        activity = null;
     }
 
     @Override
@@ -191,6 +184,7 @@ public class PaymentManager implements IPaymentManager, PurchasesUpdatedListener
 
     public void isItemPurchased(String itemSku, PurchaseListener purchaseListener) {
         if (isItemInSharedPreferences(itemSku, purchaseListener)) return;
+
         this.sku = itemSku;
         this.purchaseListener = purchaseListener;
         if (billingClient != null) {
@@ -213,7 +207,6 @@ public class PaymentManager implements IPaymentManager, PurchasesUpdatedListener
             if (activity != null) {
                 billingClient = BillingClient.newBuilder(activity).setListener(this).build();
             } else {
-                Log.d(TAG, "isItemPurchased: activity null");
             }
         }
     }
@@ -229,8 +222,6 @@ public class PaymentManager implements IPaymentManager, PurchasesUpdatedListener
         }
         return false;
     }
-
-    private static final String TAG = "PaymentManager";
 
     public void consumeAsync(final String purchaseToken, ItemConsumedListener itemConsumedListener) {
         final ConsumeResponseListener onConsumeListener = new ConsumeResponseListener() {
