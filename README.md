@@ -95,6 +95,7 @@ Any button that should start billing flow for buying no ads should contain this 
 
 ```Java
 paymentManager.initiatePurchase(Const.NO_ADS_SKU, this, this);
+```
 
 To avoid memory leaks every activity that uses PaymentManager should override its onDestroy method:
 
