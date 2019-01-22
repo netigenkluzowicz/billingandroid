@@ -3,7 +3,15 @@ Billingandroid is an Android library for dealing with Google Play Billing. It pr
 
 ## Usage
 
-Usage differens depending on whether you use it with or without Netigen Android Api. Here's example of usage with Netigen Api base activities:
+Usage differens depending on whether you use it with or without Netigen Android Api. But general rules are the same.
+
+You need to add this dependency to your build.gradle:
+
+```Groovy
+implementation 'com.github.netigenkluzowicz:billingandroid:0.7.0'
+```
+
+Here's example of usage with Netigen Api base activities:
 
 ### Splash 
 
