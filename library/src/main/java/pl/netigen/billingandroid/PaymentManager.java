@@ -2,6 +2,8 @@ package pl.netigen.billingandroid;
 
 import android.app.Activity;
 import android.content.Context;
+import android.os.AsyncTask;
+import android.os.Handler;
 import android.util.Log;
 
 import com.android.billingclient.api.BillingClient;
@@ -31,7 +33,6 @@ public class PaymentManager implements IPaymentManager, PurchasesUpdatedListener
     public static final String ITEM_UNAVAILABLE = "ITEM_UNAVAILABLE";
     public static final String SERVICE_UNAVAILABLE = "SERVICE_UNAVAILABLE";
     public static final String ITEM_NOT_OWNED = "ITEM_NOT_OWNED";
-
     public static final String TEST_PURCHASED = "android.test.purchased";
     public static final String TEST_CANCELED = "android.test.canceled";
     public static final String TEST_ITEM_UNAVAILABLE = "android.test.item_unavailable";
@@ -83,9 +84,11 @@ public class PaymentManager implements IPaymentManager, PurchasesUpdatedListener
     }
 
     private void queryPurchases() {
+
         Runnable queryToExecute = new Runnable() {
             @Override
             public void run() {
+                if (billingClient == null) return;
                 Purchase.PurchasesResult purchasesResult = billingClient.queryPurchases(BillingClient.SkuType.INAPP);
                 int responseCode = purchasesResult.getResponseCode();
                 if (responseCode != BillingClient.BillingResponse.OK) {
@@ -101,12 +104,14 @@ public class PaymentManager implements IPaymentManager, PurchasesUpdatedListener
         if (isServiceConnected) {
             runnable.run();
         } else {
+            if (billingClient == null) return;
             billingClient = BillingClient.newBuilder(activity).setListener(this).build();
             if (billingClient.isReady()) {
             } else {
                 startServiceConnectionAndRun(runnable);
             }
         }
+
     }
 
     public void initiatePurchase(String sku, PurchaseListener purchaseListener, Activity activity) {
@@ -118,9 +123,7 @@ public class PaymentManager implements IPaymentManager, PurchasesUpdatedListener
                     .setType(BillingClient.SkuType.INAPP)
                     .setOldSkus(null)
                     .build();
-            if (billingClient == null) {
-                return;
-            }
+            if (billingClient == null) return;
             billingClient.launchBillingFlow(activity, purchaseParams);
         };
         executeServiceRequest(purchaseFlowRequest);
@@ -207,6 +210,7 @@ public class PaymentManager implements IPaymentManager, PurchasesUpdatedListener
             if (activity != null) {
                 billingClient = BillingClient.newBuilder(activity).setListener(this).build();
             } else {
+
             }
         }
     }
