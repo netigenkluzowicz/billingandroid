@@ -1,10 +1,6 @@
 package pl.netigen.billingandroid;
 
 import android.app.Activity;
-import android.content.Context;
-import android.os.AsyncTask;
-import android.os.Handler;
-import android.util.Log;
 
 import com.android.billingclient.api.BillingClient;
 import com.android.billingclient.api.BillingClientStateListener;
@@ -12,6 +8,8 @@ import com.android.billingclient.api.BillingFlowParams;
 import com.android.billingclient.api.ConsumeResponseListener;
 import com.android.billingclient.api.Purchase;
 import com.android.billingclient.api.PurchasesUpdatedListener;
+import com.android.billingclient.api.SkuDetailsParams;
+import com.android.billingclient.api.SkuDetailsResponseListener;
 
 import java.util.List;
 
@@ -112,6 +110,13 @@ public class PaymentManager implements IPaymentManager, PurchasesUpdatedListener
             }
         }
 
+    }
+
+    public void getSkuDetailsList(List<String> skuList, SkuDetailsResponseListener listener) {
+        SkuDetailsParams.Builder params = SkuDetailsParams.newBuilder();
+        params.setSkusList(skuList).setType(BillingClient.SkuType.INAPP);
+        billingClient.querySkuDetailsAsync(params.build(),
+                listener);
     }
 
     public void initiatePurchase(String sku, PurchaseListener purchaseListener, Activity activity) {

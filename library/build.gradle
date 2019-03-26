@@ -8,12 +8,12 @@ buildscript {
         maven { url "https://jitpack.io" }
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:3.3.0'
+        classpath 'com.android.tools.build:gradle:3.3.2'
     }
 }
 
 group = 'com.github.netigenkluzowicz'
-version = '0.7.0'
+version = '0.8.0'
 
 android {
     compileSdkVersion 27
@@ -47,7 +47,7 @@ dependencies {
     androidTestImplementation 'com.android.support.test:runner:1.0.2'
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
 
-    api 'com.android.billingclient:billing:1.2'
+    api 'com.android.billingclient:billing:1.2.2'
 }
 
 repositories {
