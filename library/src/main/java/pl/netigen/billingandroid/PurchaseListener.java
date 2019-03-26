@@ -1,8 +1,9 @@
 package pl.netigen.billingandroid;
 
-import android.support.annotation.Nullable;
+
 
 import com.android.billingclient.api.Purchase;
+import com.android.billingclient.api.SkuDetails;
 
 import java.util.List;
 
@@ -11,7 +12,7 @@ public interface PurchaseListener {
 
     void onPaymentsError(String errorMsg);
 
-    void onItemNotBought(@Nullable String sku);
+    void onItemNotBought(String sku);
 
     void onPurchasedItemsLoaded(List<Purchase> purchases);
 }
