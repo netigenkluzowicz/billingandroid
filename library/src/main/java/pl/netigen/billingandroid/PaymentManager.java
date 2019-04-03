@@ -13,8 +13,11 @@ import com.android.billingclient.api.SkuDetailsResponseListener;
 
 import java.util.List;
 
+import pl.netigen.netigenapi.Config;
+
 public class PaymentManager implements IPaymentManager, PurchasesUpdatedListener, TestPaymentManager {
 
+    public static final String ANDROID_TEST_STRING = "android.test.";
     private BillingClient billingClient;
     private PurchaseListener purchaseListener;
     private boolean isServiceConnected;
@@ -39,11 +42,11 @@ public class PaymentManager implements IPaymentManager, PurchasesUpdatedListener
     private Activity activity;
 
     public static IPaymentManager createIPaymentManager(Activity activity) {
-        return (IPaymentManager) new PaymentManager(activity);
+        return new PaymentManager(activity);
     }
 
     public static TestPaymentManager createTestPaymentManager(Activity activity) {
-        return (TestPaymentManager) new PaymentManager(activity);
+        return new PaymentManager(activity);
     }
 
     private PaymentManager(Activity activity) {
@@ -82,18 +85,14 @@ public class PaymentManager implements IPaymentManager, PurchasesUpdatedListener
     }
 
     private void queryPurchases() {
-
-        Runnable queryToExecute = new Runnable() {
-            @Override
-            public void run() {
-                if (billingClient == null) return;
-                Purchase.PurchasesResult purchasesResult = billingClient.queryPurchases(BillingClient.SkuType.INAPP);
-                int responseCode = purchasesResult.getResponseCode();
-                if (responseCode != BillingClient.BillingResponse.OK) {
-                    purchaseListener.onPaymentsError(getErrorMessage(responseCode));
-                }
-                onQueryPurchasesFinished(purchasesResult);
+        Runnable queryToExecute = () -> {
+            if (billingClient == null) return;
+            Purchase.PurchasesResult purchasesResult = billingClient.queryPurchases(BillingClient.SkuType.INAPP);
+            int responseCode = purchasesResult.getResponseCode();
+            if (responseCode != BillingClient.BillingResponse.OK) {
+                purchaseListener.onPaymentsError(getErrorMessage(responseCode));
             }
+            onQueryPurchasesFinished(purchasesResult);
         };
         executeServiceRequest(queryToExecute);
     }
@@ -120,6 +119,7 @@ public class PaymentManager implements IPaymentManager, PurchasesUpdatedListener
     }
 
     public void initiatePurchase(String sku, PurchaseListener purchaseListener, Activity activity) {
+        checkIsInTest(sku);
         this.purchaseListener = purchaseListener;
         this.sku = sku;
         Runnable purchaseFlowRequest = () -> {
@@ -132,6 +132,12 @@ public class PaymentManager implements IPaymentManager, PurchasesUpdatedListener
             billingClient.launchBillingFlow(activity, purchaseParams);
         };
         executeServiceRequest(purchaseFlowRequest);
+    }
+
+    private void checkIsInTest(String sku) {
+        if (!Config.isInDebugMode() && sku.contains(ANDROID_TEST_STRING)) {
+            throw new RuntimeException("Test sku in production");
+        }
     }
 
     private void onQueryPurchasesFinished(Purchase.PurchasesResult result) {
@@ -191,8 +197,8 @@ public class PaymentManager implements IPaymentManager, PurchasesUpdatedListener
     }
 
     public void isItemPurchased(String itemSku, PurchaseListener purchaseListener) {
+        checkIsInTest(itemSku);
         if (isItemInSharedPreferences(itemSku, purchaseListener)) return;
-
         this.sku = itemSku;
         this.purchaseListener = purchaseListener;
         if (billingClient != null) {
@@ -214,8 +220,6 @@ public class PaymentManager implements IPaymentManager, PurchasesUpdatedListener
         } else {
             if (activity != null) {
                 billingClient = BillingClient.newBuilder(activity).setListener(this).build();
-            } else {
-
             }
         }
     }
@@ -233,12 +237,7 @@ public class PaymentManager implements IPaymentManager, PurchasesUpdatedListener
     }
 
     public void consumeAsync(final String purchaseToken, ItemConsumedListener itemConsumedListener) {
-        final ConsumeResponseListener onConsumeListener = new ConsumeResponseListener() {
-            @Override
-            public void onConsumeResponse(@BillingClient.BillingResponse int responseCode, String purchaseToken) {
-                itemConsumedListener.onItemConsumed(getErrorMessage(responseCode), purchaseToken);
-            }
-        };
+        final ConsumeResponseListener onConsumeListener = (responseCode, purchaseToken1) -> itemConsumedListener.onItemConsumed(getErrorMessage(responseCode), purchaseToken1);
 
         Runnable consumeRequest = new Runnable() {
             @Override

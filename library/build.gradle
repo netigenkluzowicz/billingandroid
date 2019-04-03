@@ -13,10 +13,10 @@ buildscript {
 }
 
 group = 'com.github.netigenkluzowicz'
-version = '0.8.0'
+version = '1.0.0'
 
 android {
-    compileSdkVersion 27
+    compileSdkVersion 28
 
     defaultConfig {
         minSdkVersion 15
@@ -42,10 +42,9 @@ android {
 
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
+    api 'com.github.netigenkluzowicz:api_android:0.11.0'
 
     testImplementation 'junit:junit:4.12'
-    androidTestImplementation 'com.android.support.test:runner:1.0.2'
-    androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
 
     api 'com.android.billingclient:billing:1.2.2'
 }

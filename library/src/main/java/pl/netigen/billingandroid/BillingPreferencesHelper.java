@@ -6,7 +6,7 @@ import android.content.SharedPreferences;
 class BillingPreferencesHelper {
 
     private SharedPreferences sharedPreferences;
-    private static final String BILLING_PREFERNECES_NAME = "NETIGEN_BILLING_PREFERENCES";
+    private static final String NETIGEN_BILLING_PREFERENCES_NAME = "NETIGEN_BILLING_PREFERENCES_NAME";
     private static final String WAS_CHECKED = "_WAS_CHECKED";
 
     public static BillingPreferencesHelper billingPreferencesHelper;
@@ -19,7 +19,7 @@ class BillingPreferencesHelper {
     }
 
     public BillingPreferencesHelper(Context context) {
-        sharedPreferences = context.getSharedPreferences(BILLING_PREFERNECES_NAME, Context.MODE_PRIVATE);
+        sharedPreferences = context.getSharedPreferences(NETIGEN_BILLING_PREFERENCES_NAME, Context.MODE_PRIVATE);
     }
 
     public boolean isSkuBought(String sku) {
