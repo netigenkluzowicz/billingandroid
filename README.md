@@ -115,3 +115,7 @@ To avoid memory leaks every activity that uses PaymentManager should override it
     }
 ```
 
+
+### Testing
+
+Fake visa - "android.test.purchased"
