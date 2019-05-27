@@ -13,8 +13,6 @@ import com.android.billingclient.api.SkuDetailsResponseListener;
 
 import java.util.List;
 
-import pl.netigen.netigenapi.Config;
-
 public class PaymentManager implements IPaymentManager, PurchasesUpdatedListener, TestPaymentManager {
 
     public static final String ANDROID_TEST_STRING = "android.test.";
@@ -119,7 +117,6 @@ public class PaymentManager implements IPaymentManager, PurchasesUpdatedListener
     }
 
     public void initiatePurchase(String sku, PurchaseListener purchaseListener, Activity activity) {
-        checkIsInTest(sku);
         this.purchaseListener = purchaseListener;
         this.sku = sku;
         Runnable purchaseFlowRequest = () -> {
@@ -132,12 +129,6 @@ public class PaymentManager implements IPaymentManager, PurchasesUpdatedListener
             billingClient.launchBillingFlow(activity, purchaseParams);
         };
         executeServiceRequest(purchaseFlowRequest);
-    }
-
-    private void checkIsInTest(String sku) {
-        if (!Config.isInDebugMode() && sku.contains(ANDROID_TEST_STRING)) {
-            throw new RuntimeException("Test sku in production");
-        }
     }
 
     private void onQueryPurchasesFinished(Purchase.PurchasesResult result) {
@@ -197,7 +188,6 @@ public class PaymentManager implements IPaymentManager, PurchasesUpdatedListener
     }
 
     public void isItemPurchased(String itemSku, PurchaseListener purchaseListener) {
-        checkIsInTest(itemSku);
         if (isItemInSharedPreferences(itemSku, purchaseListener)) return;
         this.sku = itemSku;
         this.purchaseListener = purchaseListener;

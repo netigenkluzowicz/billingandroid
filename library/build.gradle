@@ -37,12 +37,10 @@ android {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
     }
-
 }
 
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
-    api 'com.github.netigenkluzowicz:api_android:0.11.0'
 
     testImplementation 'junit:junit:4.12'
 
