@@ -8,7 +8,7 @@ Usage differens depending on whether you use it with or without Netigen Android 
 You need to add this dependency to your build.gradle:
 
 ```Groovy
-implementation 'com.github.netigenkluzowicz:billingandroid:1.0.0'
+implementation 'com.github.netigenkluzowicz:billingandroid:1.1.0'
 ```
 
 Here's example of usage with Netigen Api base activities:
