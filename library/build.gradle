@@ -13,7 +13,7 @@ buildscript {
 }
 
 group = 'com.github.netigenkluzowicz'
-version = '1.1.0'
+version = '1.2.1'
 
 android {
     compileSdkVersion 28
