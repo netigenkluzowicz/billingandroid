@@ -1,11 +1,16 @@
 package pl.netigen.billingandroid;
 
 import android.app.Activity;
+import android.support.annotation.Nullable;
+import android.util.Log;
 
+import com.android.billingclient.api.AcknowledgePurchaseParams;
+import com.android.billingclient.api.AcknowledgePurchaseResponseListener;
 import com.android.billingclient.api.BillingClient;
 import com.android.billingclient.api.BillingClientStateListener;
 import com.android.billingclient.api.BillingFlowParams;
 import com.android.billingclient.api.BillingResult;
+import com.android.billingclient.api.ConsumeParams;
 import com.android.billingclient.api.ConsumeResponseListener;
 import com.android.billingclient.api.Purchase;
 import com.android.billingclient.api.PurchasesUpdatedListener;
@@ -13,11 +18,11 @@ import com.android.billingclient.api.SkuDetails;
 import com.android.billingclient.api.SkuDetailsParams;
 import com.android.billingclient.api.SkuDetailsResponseListener;
 
+import java.util.ArrayList;
 import java.util.List;
 
-public class PaymentManager implements IPaymentManager, PurchasesUpdatedListener, TestPaymentManager {
+public class PaymentManager implements IPaymentManager, PurchasesUpdatedListener, TestPaymentManager, AcknowledgePurchaseResponseListener {
 
-    public static final String ANDROID_TEST_STRING = "android.test.";
     private BillingClient billingClient;
     private PurchaseListener purchaseListener;
     private boolean isServiceConnected;
@@ -333,6 +338,21 @@ public class PaymentManager implements IPaymentManager, PurchasesUpdatedListener
             purchaseListener.onItemNotBought(sku);
         } else {
             purchaseListener.onPaymentsError(ERROR);
+        }
+    }
+
+    void handlePurchase(Purchase purchase) {
+        if (purchase.getPurchaseState() == Purchase.PurchaseState.PURCHASED) {
+            purchaseListener.onItemBought(sku);
+            billingPreferencesHelper.setSkuBought(sku, true);
+
+            if (!purchase.isAcknowledged()) {
+                AcknowledgePurchaseParams acknowledgePurchaseParams =
+                        AcknowledgePurchaseParams.newBuilder()
+                                .setPurchaseToken(purchase.getPurchaseToken())
+                                .build();
+                billingClient.acknowledgePurchase(acknowledgePurchaseParams, this);
+            }
         }
     }
 }
