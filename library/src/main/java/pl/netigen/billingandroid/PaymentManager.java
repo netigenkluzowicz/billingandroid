@@ -57,7 +57,11 @@ public class PaymentManager implements IPaymentManager, PurchasesUpdatedListener
     private PaymentManager(Activity activity) {
         this.activity = activity;
         billingPreferencesHelper = BillingPreferencesHelper.getInstance(activity);
-        billingClient = BillingClient.newBuilder(activity).setListener(this).build();
+        billingClient = buildBillingClient();
+    }
+
+    private BillingClient buildBillingClient() {
+        return BillingClient.newBuilder(activity).enablePendingPurchases().setListener(this).build();
     }
 
     private static String getErrorMessage(int errorCode) {
@@ -107,7 +111,7 @@ public class PaymentManager implements IPaymentManager, PurchasesUpdatedListener
             runnable.run();
         } else {
             if (billingClient == null) return;
-            billingClient = BillingClient.newBuilder(activity).setListener(this).build();
+            billingClient = buildBillingClient();
             if (billingClient.isReady()) {
             } else {
                 startServiceConnectionAndRun(runnable);
@@ -216,7 +220,7 @@ public class PaymentManager implements IPaymentManager, PurchasesUpdatedListener
             }
         } else {
             if (activity != null) {
-                billingClient = BillingClient.newBuilder(activity).setListener(this).build();
+                billingClient = buildBillingClient();
             }
         }
     }
@@ -243,7 +247,7 @@ public class PaymentManager implements IPaymentManager, PurchasesUpdatedListener
                     billingClient.consumeAsync(purchaseToken, onConsumeListener);
                 } else {
                     if (activity != null) {
-                        billingClient = BillingClient.newBuilder(activity).setListener(PaymentManager.this).build();
+                        billingClient = buildBillingClient();
                         startServiceConnectionAndRun(this);
                     }
                 }
