@@ -353,6 +353,10 @@ public class PaymentManager implements IPaymentManager, PurchasesUpdatedListener
                                 .build();
                 billingClient.acknowledgePurchase(acknowledgePurchaseParams, this);
             }
+        }else if(purchase.getPurchaseState() == Purchase.PurchaseState.PENDING){
+            purchaseListener.onItemNotBought(sku);
+        }else{
+            purchaseListener.onItemNotBought(sku);
         }
     }
 
