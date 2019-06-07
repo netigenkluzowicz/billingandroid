@@ -5,6 +5,7 @@ import android.app.Activity;
 import com.android.billingclient.api.BillingClient;
 import com.android.billingclient.api.BillingClientStateListener;
 import com.android.billingclient.api.BillingFlowParams;
+import com.android.billingclient.api.BillingResult;
 import com.android.billingclient.api.ConsumeResponseListener;
 import com.android.billingclient.api.Purchase;
 import com.android.billingclient.api.PurchasesUpdatedListener;
@@ -66,27 +67,27 @@ public class PaymentManager implements IPaymentManager, PurchasesUpdatedListener
 
     private static String getErrorMessage(int errorCode) {
         switch (errorCode) {
-            case BillingClient.BillingResponse.OK:
+            case BillingClient.BillingResponseCode.OK:
                 return OK;
-            case BillingClient.BillingResponse.BILLING_UNAVAILABLE:
+            case BillingClient.BillingResponseCode.BILLING_UNAVAILABLE:
                 return BILLING_UNAVAILABLE;
-            case BillingClient.BillingResponse.DEVELOPER_ERROR:
+            case BillingClient.BillingResponseCode.DEVELOPER_ERROR:
                 return DEVELOPER_ERROR;
-            case BillingClient.BillingResponse.ERROR:
+            case BillingClient.BillingResponseCode.ERROR:
                 return ERROR;
-            case BillingClient.BillingResponse.FEATURE_NOT_SUPPORTED:
+            case BillingClient.BillingResponseCode.FEATURE_NOT_SUPPORTED:
                 return FEATURE_NOT_SUPPORTED;
-            case BillingClient.BillingResponse.ITEM_ALREADY_OWNED:
+            case BillingClient.BillingResponseCode.ITEM_ALREADY_OWNED:
                 return ITEM_ALREADY_OWNED;
-            case BillingClient.BillingResponse.ITEM_NOT_OWNED:
+            case BillingClient.BillingResponseCode.ITEM_NOT_OWNED:
                 return ITEM_NOT_OWNED;
-            case BillingClient.BillingResponse.SERVICE_DISCONNECTED:
+            case BillingClient.BillingResponseCode.SERVICE_DISCONNECTED:
                 return SERVICE_DISCONNECTED;
-            case BillingClient.BillingResponse.USER_CANCELED:
+            case BillingClient.BillingResponseCode.USER_CANCELED:
                 return USER_CANCELED;
-            case BillingClient.BillingResponse.ITEM_UNAVAILABLE:
+            case BillingClient.BillingResponseCode.ITEM_UNAVAILABLE:
                 return ITEM_UNAVAILABLE;
-            case BillingClient.BillingResponse.SERVICE_UNAVAILABLE:
+            case BillingClient.BillingResponseCode.SERVICE_UNAVAILABLE:
                 return SERVICE_UNAVAILABLE;
             default:
                 return ERROR;
@@ -98,7 +99,7 @@ public class PaymentManager implements IPaymentManager, PurchasesUpdatedListener
             if (billingClient == null) return;
             Purchase.PurchasesResult purchasesResult = billingClient.queryPurchases(BillingClient.SkuType.INAPP);
             int responseCode = purchasesResult.getResponseCode();
-            if (responseCode != BillingClient.BillingResponse.OK) {
+            if (responseCode != BillingClient.BillingResponseCode.OK) {
                 purchaseListener.onPaymentsError(getErrorMessage(responseCode));
             }
             onQueryPurchasesFinished(purchasesResult);
@@ -143,24 +144,24 @@ public class PaymentManager implements IPaymentManager, PurchasesUpdatedListener
     }
 
     private void onQueryPurchasesFinished(Purchase.PurchasesResult result) {
-        if (billingClient == null || result.getResponseCode() != BillingClient.BillingResponse.OK) {
+        if (billingClient == null || result.getResponseCode() != BillingClient.BillingResponseCode.OK) {
             purchaseListener.onPaymentsError(getErrorMessage(result.getResponseCode()));
             return;
         }
-        onPurchasesUpdated(BillingClient.BillingResponse.OK, result.getPurchasesList());
+        onPurchasesUpdated(result.getBillingResult(), result.getPurchasesList());
     }
 
     private void startServiceConnectionAndRun(final Runnable executeOnSuccess) {
         billingClient.startConnection(new BillingClientStateListener() {
             @Override
-            public void onBillingSetupFinished(@BillingClient.BillingResponse int billingResponseCode) {
-                if (billingResponseCode == BillingClient.BillingResponse.OK) {
+            public void onBillingSetupFinished(BillingResult billingResult) {
+                if (billingResult.getResponseCode() == BillingClient.BillingResponseCode.OK) {
                     isServiceConnected = true;
                     if (executeOnSuccess != null) {
                         executeOnSuccess.run();
                     }
                 } else {
-                    purchaseListener.onPaymentsError(getErrorMessage(billingResponseCode));
+                    purchaseListener.onPaymentsError(getErrorMessage(billingResult.getResponseCode()));
                 }
             }
 
@@ -208,13 +209,13 @@ public class PaymentManager implements IPaymentManager, PurchasesUpdatedListener
             } else {
                 billingClient.startConnection(new BillingClientStateListener() {
                     @Override
-                    public void onBillingSetupFinished(int responseCode) {
+                    public void onBillingSetupFinished(BillingResult billingResult) {
                         queryPurchases();
                     }
 
                     @Override
                     public void onBillingServiceDisconnected() {
-                        purchaseListener.onPaymentsError(getErrorMessage(BillingClient.BillingResponse.ERROR));
+                        purchaseListener.onPaymentsError(getErrorMessage(BillingClient.BillingResponseCode.ERROR));
                     }
                 });
             }
@@ -238,7 +239,7 @@ public class PaymentManager implements IPaymentManager, PurchasesUpdatedListener
     }
 
     public void consumeAsync(final String purchaseToken, ItemConsumedListener itemConsumedListener) {
-        final ConsumeResponseListener onConsumeListener = (responseCode, purchaseToken1) -> itemConsumedListener.onItemConsumed(getErrorMessage(responseCode), purchaseToken1);
+        final ConsumeResponseListener onConsumeListener = (billingResult, purchaseToken1) -> itemConsumedListener.onItemConsumed(getErrorMessage(billingResult.getResponseCode()), purchaseToken1);
 
         Runnable consumeRequest = new Runnable() {
             @Override
