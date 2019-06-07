@@ -36,6 +36,7 @@ public class PaymentManager implements IPaymentManager, PurchasesUpdatedListener
     public static final String TEST_CANCELED = "android.test.canceled";
     public static final String TEST_ITEM_UNAVAILABLE = "android.test.item_unavailable";
 
+    private ArrayList<String> skuList;
     private BillingPreferencesHelper billingPreferencesHelper;
     private Activity activity;
 
@@ -44,7 +45,13 @@ public class PaymentManager implements IPaymentManager, PurchasesUpdatedListener
     }
 
     public static TestPaymentManager createTestPaymentManager(Activity activity) {
-        return new PaymentManager(activity);
+        TestPaymentManager testPaymentManager = new PaymentManager(activity);
+        ArrayList<String> skuList = new ArrayList<>();
+        skuList.add(TEST_PURCHASED);
+        skuList.add(TEST_ITEM_UNAVAILABLE);
+        skuList.add(TEST_CANCELED);
+        ((PaymentManager) testPaymentManager).skuList = skuList;
+        return testPaymentManager;
     }
 
     private PaymentManager(Activity activity) {
