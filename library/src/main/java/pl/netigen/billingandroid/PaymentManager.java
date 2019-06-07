@@ -355,4 +355,12 @@ public class PaymentManager implements IPaymentManager, PurchasesUpdatedListener
             }
         }
     }
+
+    /** This callback returns failure(response code BILLING_UNAVAILABLE with message API_VERSION_NOT_V9),
+     * even though everything seems to be going fine */
+    @Override
+    public void onAcknowledgePurchaseResponse(BillingResult billingResult) {
+
+    }
+
 }
