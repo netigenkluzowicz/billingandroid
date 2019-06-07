@@ -277,7 +277,12 @@ public class PaymentManager implements IPaymentManager, PurchasesUpdatedListener
             @Override
             public void run() {
                 if (billingClient != null) {
-                    billingClient.consumeAsync(purchaseToken, onConsumeListener);
+                    ConsumeParams consumeParams =
+                            ConsumeParams.newBuilder()
+                                    .setPurchaseToken(purchaseToken)
+                                    .setDeveloperPayload("")
+                                    .build();
+                    billingClient.consumeAsync(consumeParams, onConsumeListener);
                 } else {
                     if (activity != null) {
                         billingClient = buildBillingClient();
