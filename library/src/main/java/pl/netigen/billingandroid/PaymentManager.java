@@ -125,12 +125,20 @@ public class PaymentManager implements IPaymentManager, PurchasesUpdatedListener
                 startServiceConnectionAndRun(runnable);
             }
         }
-
     }
 
     private void getSkuDetailsList(SkuDetailsResponseListener listener) {
         SkuDetailsParams.Builder params = SkuDetailsParams.newBuilder();
         params.setSkusList(skuList).setType(BillingClient.SkuType.INAPP);
+        billingClient.querySkuDetailsAsync(params.build(),
+                listener);
+    }
+
+    public void getSkuDetailsList(ArrayList<String> skuList, SkuDetailsResponseListener listener) {
+        SkuDetailsParams.Builder params = SkuDetailsParams.newBuilder();
+        params.setSkusList(skuList).setType(BillingClient.SkuType.INAPP);
+        //Not sure if the line below is really necessary
+        this.skuList = skuList;
         billingClient.querySkuDetailsAsync(params.build(),
                 listener);
     }
