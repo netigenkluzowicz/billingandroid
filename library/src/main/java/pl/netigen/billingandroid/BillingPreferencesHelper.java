@@ -11,8 +11,8 @@ class BillingPreferencesHelper {
 
     public static BillingPreferencesHelper billingPreferencesHelper;
 
-    public static BillingPreferencesHelper getInstance(Context context){
-        if(billingPreferencesHelper==null){
+    public static BillingPreferencesHelper getInstance(Context context) {
+        if (billingPreferencesHelper == null) {
             billingPreferencesHelper = new BillingPreferencesHelper(context);
         }
         return billingPreferencesHelper;
