@@ -2,7 +2,6 @@ package pl.netigen.billingandroid;
 
 import android.app.Activity;
 import android.support.annotation.Nullable;
-import android.util.Log;
 
 import com.android.billingclient.api.AcknowledgePurchaseParams;
 import com.android.billingclient.api.AcknowledgePurchaseResponseListener;
@@ -125,12 +124,20 @@ public class PaymentManager implements IPaymentManager, PurchasesUpdatedListener
                 startServiceConnectionAndRun(runnable);
             }
         }
-
     }
 
     private void getSkuDetailsList(SkuDetailsResponseListener listener) {
         SkuDetailsParams.Builder params = SkuDetailsParams.newBuilder();
         params.setSkusList(skuList).setType(BillingClient.SkuType.INAPP);
+        billingClient.querySkuDetailsAsync(params.build(),
+                listener);
+    }
+
+    public void getSkuDetailsList(ArrayList<String> skuList, SkuDetailsResponseListener listener) {
+        SkuDetailsParams.Builder params = SkuDetailsParams.newBuilder();
+        params.setSkusList(skuList).setType(BillingClient.SkuType.INAPP);
+        //Not sure if the line below is really necessary
+        this.skuList = skuList;
         billingClient.querySkuDetailsAsync(params.build(),
                 listener);
     }
@@ -353,15 +360,17 @@ public class PaymentManager implements IPaymentManager, PurchasesUpdatedListener
                                 .build();
                 billingClient.acknowledgePurchase(acknowledgePurchaseParams, this);
             }
-        }else if(purchase.getPurchaseState() == Purchase.PurchaseState.PENDING){
+        } else if (purchase.getPurchaseState() == Purchase.PurchaseState.PENDING) {
             purchaseListener.onItemNotBought(sku);
-        }else{
+        } else {
             purchaseListener.onItemNotBought(sku);
         }
     }
 
-    /** This callback returns failure(response code BILLING_UNAVAILABLE with message API_VERSION_NOT_V9),
-     * even though everything seems to be going fine */
+    /**
+     * This callback returns failure(response code BILLING_UNAVAILABLE with message API_VERSION_NOT_V9),
+     * even though everything seems to be going fine
+     */
     @Override
     public void onAcknowledgePurchaseResponse(BillingResult billingResult) {
 

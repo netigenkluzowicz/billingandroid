@@ -1,9 +1,7 @@
 package pl.netigen.billingandroid;
 
 
-
 import com.android.billingclient.api.Purchase;
-import com.android.billingclient.api.SkuDetails;
 
 import java.util.List;
 
